@@ -1,0 +1,15 @@
+langchain
+langchain-core
+langchain-openai
+langchain-google-genai
+langchain-community
+langchain-huggingface
+langchain-ollama
+sentence-transformers
+pydantic
+pypdf
+docx2txt
+unstructured[eml]
+fastapi
+uvicorn[standard]
+python-dotenv
