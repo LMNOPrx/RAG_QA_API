@@ -128,6 +128,6 @@ def invoke_rag_chain(doc_url: str, questions: List[str]) -> List[str]:
     )
 
 
-    answers = [rag_chain.invoke(q) for q in questions]
+    answers = rag_chain.batch(questions)
     return answers
 
