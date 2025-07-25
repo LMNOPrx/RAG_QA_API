@@ -15,3 +15,4 @@ uvicorn[standard]
 python-dotenv
 pinecone-client
 langchain-pinecone
+langchain-groq

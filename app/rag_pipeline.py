@@ -15,9 +15,8 @@ from langchain_community.document_loaders import (
 from langchain_pinecone import Pinecone
 from pinecone import Pinecone as PineconeClient
 
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_ollama import ChatOllama
+from langchain_groq import ChatGroq
 
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
@@ -71,7 +70,7 @@ def get_retriever(doc_url: str) -> Runnable:
     pinecone_client = PineconeClient(api_key=settings.PINECONE_API_KEY)
     index_name = "lmnoprx-rag"
     embeddings = HuggingFaceEmbeddings(
-        model="BAAI/bge-small-en-v1.5"
+        model="mixedbread-ai/mxbai-embed-large-v1"
     )
     
     namespace = hashlib.sha256(doc_url.encode()).hexdigest()[:32]
@@ -98,7 +97,7 @@ def docs2str(docs):
 def invoke_rag_chain(doc_url: str, questions: List[str]) -> List[str]:
 
     retriever = get_retriever(doc_url)
-    model = ChatOllama(model='llama3:8b', temperature=0.5)
+    model = ChatGroq(model='llama-3.3-70b-versatile', temperature=0.5)
 
     prompt_template = ChatPromptTemplate([
         (
@@ -106,8 +105,8 @@ def invoke_rag_chain(doc_url: str, questions: List[str]) -> List[str]:
 
             "You are a helpful assistant that answers the query based only on the given context. if the answer is not in the context, say I don't know"
             "if the answer is decision based, then first give the decision and then the explaination."
-            "start the answer directly, don't start with 'based on' or something like that, just be straight to the point."
-            "Answer in one single paragraph."
+            "Answer to the point only, be concise and accurate."
+            "Answer in one paragraph only"
         ),
         (
             "human",

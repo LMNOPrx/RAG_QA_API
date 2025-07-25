@@ -10,6 +10,7 @@ class Settings:
     LANGCHAIN_TRACING_V2 = os.getenv("LANGCHAIN_TRACING_V2")
     LANGCHAIN_API_KEY = os.getenv("LANGCHAIN_API_KEY")
     LANGCHAIN_PROJECT = os.getenv("LANGCHAIN_PROJECT")
+    GROQ_API_KEY = os.getenv("GROQ_API_KEY")
     
     def __init__(self):
         # Optional: print or assert to catch missing env vars
