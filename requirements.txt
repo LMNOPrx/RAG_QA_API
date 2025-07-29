@@ -16,3 +16,5 @@ python-dotenv
 pinecone-client
 langchain-pinecone
 langchain-groq
+cohere
+langchain-cohere

@@ -11,6 +11,9 @@ class Settings:
     LANGCHAIN_API_KEY = os.getenv("LANGCHAIN_API_KEY")
     LANGCHAIN_PROJECT = os.getenv("LANGCHAIN_PROJECT")
     GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+    HUGGINGFACEHUB_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")
+    COHERE_API_KEY = os.getenv("COHERE_API_KEY")
+    PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME")
     
     def __init__(self):
         # Optional: print or assert to catch missing env vars
