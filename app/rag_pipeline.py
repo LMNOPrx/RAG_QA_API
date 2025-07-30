@@ -1,6 +1,7 @@
 import requests
 import os
 import tempfile
+import time
 from typing import List
 from urllib.parse import urlparse
 import hashlib
@@ -13,19 +14,17 @@ from langchain_community.document_loaders import (
     UnstructuredEmailLoader,
 )
 from langchain.schema import Document
-from langchain_pinecone import PineconeVectorStore
-from pinecone import Pinecone as PineconeClient
+from langchain_community.vectorstores import FAISS
 
 from langchain_cohere import CohereEmbeddings
 from langchain_groq import ChatGroq
-from langchain_google_genai import ChatGoogleGenerativeAI
 
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough, Runnable
 from functools import lru_cache
 
-from app.schemas import QueryDetails
+FAISS_INDEX_PATH = "./faiss_index"
 
 def get_loader(file_path: str, file_extension: str):
     """Selects the appropriate document loader based on the file extension."""
@@ -37,12 +36,6 @@ def get_loader(file_path: str, file_extension: str):
         return UnstructuredEmailLoader(file_path)
     else:
         raise ValueError(f"Unsupported file type: {file_extension}")
-
-
-# Cache client and embedding initialization
-@lru_cache(maxsize=1)
-def get_pinecone_client():
-    return PineconeClient(api_key=settings.PINECONE_API_KEY)
 
 @lru_cache(maxsize=1)
 def get_embedding_model():
@@ -88,28 +81,31 @@ def get_chunks(doc_url: str) -> List[Document]:
 
 def get_retriever(doc_url: str) -> Runnable:
 
-    pinecone_client = get_pinecone_client()
-    index_name = "lmnoprx-rag"
     embeddings = get_embedding_model()
     
-    namespace = hashlib.sha256(doc_url.encode()).hexdigest()[:32]
-    
-    index = pinecone_client.Index(index_name)
-    existing_namespaces = index.describe_index_stats().get("namespaces", {})
+    # Create a unique, safe filename for the local index based on the document URL
+    doc_hash = hashlib.sha256(doc_url.encode()).hexdigest()
+    index_file = os.path.join(FAISS_INDEX_PATH, f"{doc_hash}.faiss")
 
-    if namespace not in existing_namespaces:
-        PineconeVectorStore.from_documents(
-            documents=get_chunks(doc_url), 
-            embedding=embeddings, 
-            index_name=index_name,
-            namespace=namespace
-        )
+    # Create the directory for indexes if it doesn't exist
+    os.makedirs(FAISS_INDEX_PATH, exist_ok=True)
 
-    return PineconeVectorStore.from_existing_index(
-        index_name=index_name,
-        embedding=embeddings,
-        namespace=namespace
-    ).as_retriever(search_kwargs={'namespace': namespace, 'k': 10})
+    if os.path.exists(index_file):
+        print(f"INFO: FAISS index found for document. Loading from: {index_file}")
+        vectorstore = FAISS.load_local(index_file, embeddings, allow_dangerous_deserialization=True)
+    else:
+        print(f"INFO: No FAISS index found. Processing and creating new index for document.")
+        chunks = get_chunks(doc_url)
+        if not chunks:
+            raise ValueError("Document processing yielded no chunks.")
+        
+        print("INFO: Creating FAISS index from document chunks...")
+        vectorstore = FAISS.from_documents(documents=chunks, embedding=embeddings)
+        
+        print(f"INFO: Saving FAISS index to: {index_file}")
+        vectorstore.save_local(index_file)
+
+    return vectorstore.as_retriever(search_kwargs={'k': 10})
 
 
 def docs2str(docs):

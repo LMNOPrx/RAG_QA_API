@@ -15,15 +15,6 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# === CORS Setup (adjust origins in prod) ===
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # === Auth Token ===
 EXPECTED_TOKEN = "2df1ab83345b896947425c6ae8c9beeb25eb50b0e4e7b731e7e70c4783feb456"
 
