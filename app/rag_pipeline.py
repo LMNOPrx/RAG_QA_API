@@ -16,7 +16,8 @@ from langchain_community.document_loaders import (
 from langchain.schema import Document
 from langchain_community.vectorstores import FAISS
 
-from langchain_cohere import CohereEmbeddings
+from langchain_cohere import CohereEmbeddings, CohereRerank
+from langchain.retrievers import ContextualCompressionRetriever
 from langchain_groq import ChatGroq
 
 from langchain_core.prompts import ChatPromptTemplate
@@ -83,11 +84,9 @@ def get_retriever(doc_url: str) -> Runnable:
 
     embeddings = get_embedding_model()
     
-    # Create a unique, safe filename for the local index based on the document URL
     doc_hash = hashlib.sha256(doc_url.encode()).hexdigest()
     index_file = os.path.join(FAISS_INDEX_PATH, f"{doc_hash}.faiss")
 
-    # Create the directory for indexes if it doesn't exist
     os.makedirs(FAISS_INDEX_PATH, exist_ok=True)
 
     if os.path.exists(index_file):
@@ -105,7 +104,20 @@ def get_retriever(doc_url: str) -> Runnable:
         print(f"INFO: Saving FAISS index to: {index_file}")
         vectorstore.save_local(index_file)
 
-    return vectorstore.as_retriever(search_kwargs={'k': 10})
+    base_retriever = vectorstore.as_retriever(search_kwargs={'k': 20})
+
+    compressor = CohereRerank(
+        cohere_api_key=settings.COHERE_API_KEY,
+        model="rerank-english-v3.0",
+        top_n=3
+    )
+
+    compression_retriever = ContextualCompressionRetriever(
+        base_compressor=compressor,
+        base_retriever=base_retriever
+    )
+
+    return compression_retriever
 
 
 def docs2str(docs):
@@ -148,6 +160,6 @@ def invoke_rag_chain(doc_url: str, questions: List[str]) -> List[str]:
     )
 
 
-    answers = rag_chain.batch(questions)
+    answers = [rag_chain.invoke(q) for q in questions]
     return answers
 

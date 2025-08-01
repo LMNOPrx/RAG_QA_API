@@ -1,0 +1,27 @@
+# Ignore Docker specific files
+.dockerignore
+Dockerfile
+
+# Ignore git
+.git
+.gitignore
+
+# Ignore environment files - these are passed in at runtime
+.env
+.env.*
+
+# Ignore Python specific files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.venv/
+*.egg-info/
+
+.vscode/
+
+# Ignore documentation
+README.md
+
+faiss_index/

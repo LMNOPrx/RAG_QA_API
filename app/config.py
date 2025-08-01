@@ -10,7 +10,7 @@ class Settings:
     
     def __init__(self):
         # Optional: print or assert to catch missing env vars
-        for key in ['GROQ_API_KEY', 'PINECONE_API_KEY', 'COHERE_API_KEY']:
+        for key in ['GROQ_API_KEY', 'COHERE_API_KEY']:
             if not getattr(self, key):
                 raise ValueError(f"{key} not found in environment.")
 
