@@ -14,3 +14,4 @@ langchain-groq
 cohere==5.15.0
 langchain-cohere
 faiss-cpu
+rank_bm25
