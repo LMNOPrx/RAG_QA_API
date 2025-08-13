@@ -34,8 +34,8 @@ Supports PDFs, DOCX, and Email formats, combining **FiD architecture**, **hybrid
 ```
 ├── app/
 │   ├── rag_pipeline.py     # Core RAG logic
-│   └── config.py           # API key & settings management
-│   └── main.py							# FastAPI server and API routes
+│   ├── config.py           # API key & settings management
+│   ├── main.py							# FastAPI server and API routes
 │   └── __init__.py
 ├── requirements.txt        # Dependencies
 ├── Dockerfile              # Docker build instructions
